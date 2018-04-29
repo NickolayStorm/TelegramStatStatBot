@@ -1,8 +1,11 @@
+import re
 import logging
 from hashlib import sha224
 
-from config import Config
 import psycopg2
+
+from config import Config
+import utils
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -28,10 +31,10 @@ def get_link(bot, update):
               VALUES(%s, %s)"""
     try:
         cur.execute(sql, (postfix, chat_id))
+        conn.commit()
     except psycopg2.IntegrityError:
         # chat already exists
         pass
-    conn.commit()
 
     update.message.reply_text('{}/statistic/{}'.format(
                                     Config.instance().server,
@@ -44,12 +47,31 @@ def get_link(bot, update):
 
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    update.message.reply_text('Help! I need somebody help...')
 
 
-def get_message(bot, update):
-    """Echo the user message."""
-    # TODO: save messages
+def get_message(_, update):
+    chat_id = update.message.chat.id
+    text = update.message.text
+
+    conn = Config.instance().connection
+    cur = conn.cursor()
+    sql = """CREATE TABLE IF NOT EXISTS public.chat%s (w TEXT);"""
+    cur.execute(sql, (chat_id, ))
+
+    text = re.sub(' +', ' ', text)
+    # TODO: remove symbols like ! ; , .
+
+    words = text.split(' ')
+
+    words = filter(utils.is_good_word, words)
+
+    args_str = ','.join(cur.mogrify('(%s)', (w,)).decode('utf-8') for w in words)
+    cur.execute("INSERT INTO {} VALUES ".format('public.chat{}'
+                                        .format(chat_id))
+                + args_str)
+    conn.commit()
+
     update.message.reply_text(update.message.text)
 
 

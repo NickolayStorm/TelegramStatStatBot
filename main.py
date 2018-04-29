@@ -30,7 +30,6 @@ def setup_server(token):
 
 
 def register_handlers(dispatcher):
-
     dispatcher.add_handler(CommandHandler("stat", get_link))
     dispatcher.add_handler(CommandHandler("help", help))
 
@@ -49,14 +48,12 @@ def setup_updater(token):
 def main():
 
     Config('config.json')
-
     Config.add_connection(conn)
 
     token = Config.instance().token
     webhook = Config.instance().is_webhook
 
     setup = setup_server if webhook else setup_updater
-
     setup(token)
 
     app.run()
