@@ -1,102 +1,68 @@
 import sys
 
-import uuid
-
-import json
-
+from telegram import Bot
+from telegram.ext import Dispatcher
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import logging
+from flask import Flask
 
-# Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+from config import Config
+from handlers import get_message, get_link, help
+from server import webhook_listener, get_stats
 
-logger = logging.getLogger(__name__)
-
-
-SERVER_MODE = False
+import psycopg2
 
 
-class Config:
-    _instance = None
-    default_conf = 'config.json'
-
-    def __init__(self, filename):
-        with open(filename, 'r') as f:
-            data = json.load(f)
-            self.server = data['server']
-            self.token = data['token']
-            Config._instance = self
-
-    @staticmethod
-    def instance():
-        if Config._instance is None:
-            Config(Config.default_conf)
-        return Config._instance
+conn = psycopg2.connect('postgresql://bot:12345@104.236.57.85:5432/chats')
 
 
-# Define a few command handlers. These usually take the two arguments bot and
-# update. Error handlers also receive the raised TelegramError object in error.
-def get_link(bot, update):
-    """Send a message when the command /start is issued."""
+app = Flask('StatStatBot')
+app.add_url_rule('/stats/<chat_hash>', '', view_func=get_stats)
 
-    uid = uuid.UUID(update.message.chat.id)
-
-    # TODO: Save uuid
-    update.message.reply_text('{}/statistic/{}'.format(
-                                    Config.instance().server,
-                                    uid))
-
-    print(update)
-    print(update.message)
-    print(update.message.chat.id)
+# app.run()
 
 
-def help(bot, update):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+def setup_server(token):
+
+    app.add_url_rule('/stats/<str:hash>', methods=['GET'], view_func=webhook_listener)
+
+    # Create bot, update queue and dispatcher instances
+    bot = Bot(token)
+
+    dispatcher = Dispatcher(bot, None, workers=0)
+
+    return dispatcher
 
 
-def get_message(bot, update):
-    """Echo the user message."""
-    # TODO: save messages
-    update.message.reply_text(update.message.text)
+def register_handlers(dispatcher):
+
+    dispatcher.add_handler(CommandHandler("stat", get_link))
+    dispatcher.add_handler(CommandHandler("help", help))
+
+    dispatcher.add_handler(MessageHandler(Filters.text, get_message))
+    return dispatcher
 
 
-def error(bot, update, error):
-    """Log Errors caused by Updates."""
-    logger.warning('Update "%s" caused error "%s"', update, error)
+def setup_updater(token):
+    updater = Updater(token)
+    dp = updater.dispatcher
+    register_handlers(dp)
+    updater.start_polling()
+    updater.idle()
+    print('after')
 
 
 def main():
-    print('Allo')
-    if len(sys.argv) > 1:
-        global SERVER_MODE
-        SERVER_MODE = True
 
     Config('config.json')
 
-    updater = Updater(Config.instance().token)
+    Config.add_connection(conn)
 
-    # Get the dispatcher to register handlers
-    dp = updater.dispatcher
+    token = Config.instance().token
+    webhook = Config.instance().is_webhook
 
-    # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("stat", get_link))
-    dp.add_handler(CommandHandler("help", help))
+    setup = setup_server if webhook else setup_updater
 
-    dp.add_handler(MessageHandler(Filters.text, get_message))
-
-    # log all errors
-    dp.add_error_handler(error)
-
-    # Start the Bot
-    updater.start_polling()
-
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
-    updater.idle()
+    setup(token)
 
 
 if __name__ == '__main__':
