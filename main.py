@@ -1,4 +1,4 @@
-import sys
+import psycopg2
 
 from telegram import Bot
 from telegram.ext import Dispatcher
@@ -9,16 +9,12 @@ from config import Config
 from handlers import get_message, get_link, help
 from server import webhook_listener, get_stats
 
-import psycopg2
-
 
 conn = psycopg2.connect('postgresql://bot:12345@104.236.57.85:5432/chats')
 
 
 app = Flask('StatStatBot')
-app.add_url_rule('/stats/<chat_hash>', '', view_func=get_stats)
-
-# app.run()
+app.add_url_rule('/statistic/<chat_hash>', '', view_func=get_stats)
 
 
 def setup_server(token):
@@ -47,8 +43,7 @@ def setup_updater(token):
     dp = updater.dispatcher
     register_handlers(dp)
     updater.start_polling()
-    updater.idle()
-    print('after')
+    # updater.idle()
 
 
 def main():
@@ -64,6 +59,7 @@ def main():
 
     setup(token)
 
+    app.run()
 
 if __name__ == '__main__':
     main()

@@ -5,9 +5,10 @@ from config import Config
 
 def get_stats(chat_hash):
     sql = 'SELECT chat_id FROM links WHERE hash = %s'
-    curs = Config.instance().cursor
+    conn = Config.instance().connection
+    curs = conn.cursor()
     curs.execute(sql, (chat_hash,))
-    print(curs.fetchall())
+    print(curs.fetchone())
     return 'stats for' + chat_hash
 
 
