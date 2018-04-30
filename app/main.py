@@ -6,7 +6,7 @@ from telegram.ext import Dispatcher, Updater, CommandHandler,\
 from flask import Flask
 
 from config import Config
-from handlers import get_message, get_link, help
+from handlers import get_message, get_link, get_help
 from server import webhook_listener, get_stats
 
 
@@ -48,13 +48,11 @@ def setup_updater(token):
 
 def register_handlers(dispatcher):
     dispatcher.add_handler(CommandHandler('stat', get_link))
-    dispatcher.add_handler(CommandHandler('help', help))
-
+    dispatcher.add_handler(CommandHandler('help', get_help))
     dispatcher.add_handler(MessageHandler(Filters.text, get_message))
 
 
 def main():
-
     Config('config.json')
     Config.add_connection(conn)
 

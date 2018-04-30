@@ -14,7 +14,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-def get_link(bot, update):
+def get_link(_, update):
 
     chat_id = update.message.chat.id
 
@@ -41,8 +41,7 @@ def get_link(bot, update):
                                     postfix))
 
 
-def help(bot, update):
-    """Send a message when the command /help is issued."""
+def get_help(_, update):
     update.message.reply_text('Help! I need somebody help...')
 
 
@@ -63,12 +62,10 @@ def get_message(_, update):
     words = filter(utils.is_good_word, words)
 
     args_str = ','.join(cur.mogrify('(%s)', (w,)).decode('utf-8') for w in words)
-    cur.execute("INSERT INTO {} VALUES ".format('public.chat{}'.format(chat_id))
+    cur.execute('INSERT INTO {} VALUES '.format('public.chat{}'.format(chat_id))
                 + args_str)
     conn.commit()
 
-    update.message.reply_text(update.message.text)
 
-
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"', update, error)
+def error(_, update, err):
+    logger.warning('Update "%s" caused error "%s"', update, err)
