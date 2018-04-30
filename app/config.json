@@ -1,0 +1,10 @@
+{
+  "server": "<server>:<port>", // Your server and port for statistic
+  "token": "<token>", // Your telegram bot token
+  "salt": "<phrase>", // Your random phrase for crypto salt
+  "mode": "update", // update | server: user Updater or webhook
+  "webhook": { // Optional
+         "key": "<endpoint>", // Your endpoint token (you need add this location it to nginx/apache)
+         "url": "<host>:<port: 443|8443>" // Webhook url
+  }
+}
