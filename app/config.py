@@ -11,7 +11,10 @@ class Config:
             self.server = data['server']
             self.token = data['token']
             self.crypto_salt = data['salt']
-        self.is_webhook = data.get('mode') == 'server'
+            self.is_webhook = data.get('mode') == 'server'
+            if self.is_webhook:
+                self.hook_url = data['webhook']['url']
+                self.hook_key = data['webhook']['key']
         Config._instance = self
 
     @staticmethod
@@ -24,4 +27,11 @@ class Config:
     def add_connection(connection):
         Config.instance().connection = connection
 
+    @staticmethod
+    def add_bot(bot):
+        Config.instance().bot = bot
+
+    @staticmethod
+    def add_dispatcher(dp):
+        Config.instance().dispatcher = dp
 

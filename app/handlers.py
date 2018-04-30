@@ -33,16 +33,12 @@ def get_link(bot, update):
         cur.execute(sql, (postfix, chat_id))
         conn.commit()
     except psycopg2.IntegrityError:
-        # chat already exists
+        # Chat already exists but it's okay
         pass
 
     update.message.reply_text('{}/statistic/{}'.format(
                                     Config.instance().server,
                                     postfix))
-
-    print(update)
-    print(update.message)
-    print(update.message.chat.id)
 
 
 def help(bot, update):
@@ -67,8 +63,7 @@ def get_message(_, update):
     words = filter(utils.is_good_word, words)
 
     args_str = ','.join(cur.mogrify('(%s)', (w,)).decode('utf-8') for w in words)
-    cur.execute("INSERT INTO {} VALUES ".format('public.chat{}'
-                                        .format(chat_id))
+    cur.execute("INSERT INTO {} VALUES ".format('public.chat{}'.format(chat_id))
                 + args_str)
     conn.commit()
 
@@ -76,5 +71,4 @@ def get_message(_, update):
 
 
 def error(bot, update, error):
-    """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
