@@ -19,7 +19,7 @@ def get_stats(chat_hash):
         order by cnt desc
         limit 10;
     """
-    curs.execute(sql, chat_id_tuple)
+    curs.execute(sql, (abs(chat_id_tuple[0]), ))
     stats = curs.fetchall()
 
     table = PrettyTable()
@@ -34,7 +34,6 @@ def get_stats(chat_hash):
 
 
 def webhook_listener():
-    print('Hocked')
     if request.method == 'POST':
         bot = Config.instance().bot
         update = Update.de_json(request.get_json(force=True), bot)

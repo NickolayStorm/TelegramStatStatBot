@@ -19,7 +19,7 @@ def get_link(_, update):
     chat_id = update.message.chat.id
 
     salt = Config.instance().crypto_salt
-    m = sha224(bytes(chat_id))
+    m = sha224(bytes(abs(chat_id)))
     m.update(salt.encode())
 
     postfix = m.hexdigest()
@@ -30,7 +30,7 @@ def get_link(_, update):
                     (hash, chat_id) 
               VALUES(%s, %s)"""
     try:
-        cur.execute(sql, (postfix, chat_id))
+        cur.execute(sql, (postfix, abs(chat_id)))
         conn.commit()
     except psycopg2.IntegrityError:
         # Chat already exists but it's okay
@@ -46,7 +46,7 @@ def get_help(_, update):
 
 
 def get_message(_, update):
-    chat_id = update.message.chat.id
+    chat_id = abs(update.message.chat.id)
     text = update.message.text
 
     conn = Config.instance().connection
