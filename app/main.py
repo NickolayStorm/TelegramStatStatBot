@@ -61,7 +61,6 @@ def main():
 
     setup = setup_server if webhook else setup_updater
     dp = setup(token)
-
     Config.add_dispatcher(dp)
 
     app.run()
