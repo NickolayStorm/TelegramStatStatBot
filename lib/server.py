@@ -2,7 +2,7 @@ from flask import request
 from prettytable import PrettyTable
 from telegram import Update
 
-from config import Config
+from lib.config import Config
 
 
 def get_stats(chat_hash):

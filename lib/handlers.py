@@ -4,8 +4,8 @@ from hashlib import sha224
 
 import psycopg2
 
-from config import Config
-import utils
+from lib import Config
+from lib import utils
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

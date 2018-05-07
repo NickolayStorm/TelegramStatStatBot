@@ -5,9 +5,9 @@ from telegram.ext import Dispatcher, Updater, CommandHandler,\
     MessageHandler, Filters
 from flask import Flask
 
-from config import Config
-from handlers import get_message, get_link, get_help
-from server import webhook_listener, get_stats
+from lib import Config
+from lib.handlers import get_message, get_link, get_help
+from lib.server import webhook_listener, get_stats
 
 
 conn = psycopg2.connect('postgresql://bot:12345@10.8.0.1:5432/chats')
