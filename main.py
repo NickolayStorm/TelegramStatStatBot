@@ -27,7 +27,7 @@ def setup_server(token):
     Config.add_bot(bot)
 
     s = bot.setWebhook(Config.instance().hook_url + Config.instance().hook_key,
-                       certificate=open('/etc/ssl/certs/nginx-selfsigned.crt', 'rb'))
+                       certificate=open(Config.instance().cert, 'rb'))
 
     print('webhook setup ' + 'ok' if s else 'failed')
 
