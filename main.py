@@ -5,9 +5,9 @@ from telegram.ext import Dispatcher, Updater, CommandHandler,\
     MessageHandler, Filters
 from flask import Flask
 
-from config import Config
-from handlers import get_message, get_link, get_help
-from server import webhook_listener, get_stats
+from lib import Config
+from lib.handlers import get_message, get_link, get_help
+from lib.server import webhook_listener, get_stats
 
 
 conn = psycopg2.connect('postgresql://bot:12345@10.8.0.1:5432/chats')
@@ -27,7 +27,7 @@ def setup_server(token):
     Config.add_bot(bot)
 
     s = bot.setWebhook(Config.instance().hook_url + Config.instance().hook_key,
-                       certificate=open('/etc/ssl/certs/nginx-selfsigned.crt', 'rb'))
+                       certificate=open(Config.instance().cert, 'rb'))
 
     print('webhook setup ' + 'ok' if s else 'failed')
 

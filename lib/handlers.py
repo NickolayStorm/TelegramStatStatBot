@@ -1,11 +1,9 @@
-import re
 import logging
 from hashlib import sha224
 
 import psycopg2
 
-from config import Config
-import utils
+from lib import Config
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -34,7 +32,7 @@ def get_link(_, update):
         conn.commit()
     except psycopg2.IntegrityError:
         # Chat already exists but it's okay
-        pass
+        conn.rollback()
 
     update.message.reply_text('{}/statistic/{}'.format(
                                     Config.instance().server,
@@ -49,21 +47,19 @@ def get_message(_, update):
     chat_id = abs(update.message.chat.id)
     text = update.message.text
 
+    if not text:
+        return
+
     conn = Config.instance().connection
     cur = conn.cursor()
     sql = """CREATE TABLE IF NOT EXISTS public.chat%s (w TEXT);"""
     cur.execute(sql, (chat_id, ))
 
-    text = re.sub(' +', ' ', text)
-    # TODO: remove symbols like ! ; , .
-
-    words = text.split(' ')
-
-    words = filter(utils.is_good_word, words)
-
-    args_str = ','.join(cur.mogrify('(%s)', (w,)).decode('utf-8') for w in words)
-    cur.execute('INSERT INTO {} VALUES '.format('public.chat{}'.format(chat_id))
-                + args_str)
+    sql = """
+    INSERT INTO public.chat{} (w) 
+    SELECT lexeme FROM unnest(to_tsvector('russian', %s));
+    """.format(chat_id)
+    cur.execute(sql, (text, ))
     conn.commit()
 
 

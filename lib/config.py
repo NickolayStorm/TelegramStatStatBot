@@ -8,13 +8,13 @@ class Config:
     def __init__(self, filename):
         with open(filename, 'r') as f:
             data = json.load(f)
-            self.server = data['server']
-            self.token = data['token']
-            self.crypto_salt = data['salt']
-            self.is_webhook = data.get('mode') == 'server'
+            self.crypto_salt = data.pop('salt')
+            self.is_webhook = data.pop('mode', None) == 'server'
             if self.is_webhook:
-                self.hook_url = data['webhook']['url']
-                self.hook_key = data['webhook']['key']
+                params = data.pop('webhook')
+                self.hook_url = params['url']
+                self.hook_key = params['key']
+            self.__dict__.update(data)
         Config._instance = self
 
     @staticmethod
